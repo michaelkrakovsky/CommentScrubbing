@@ -38,9 +38,11 @@ def delayCall(resetTimeStamp):
 subreddit = reddit.subreddit('NEO') 
 commentsPassed = 0      # Keeps track of the number of comments passed
 
-for date in range(START_DATE, END_DATE):
+for date in range(START_DATE, END_DATE, INTERVAL_TIME):
+	print("Now Processing date: ", time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(date)))
 	# Loop through the selected time frame and acquire the comments
-	for redditPosts in subreddit.submissions(date, (date + INTERVAL_TIME)):    
+	subredditPosts = subreddit.submissions(date, (date + (INTERVAL_TIME - 1)))
+	for redditPosts in subredditPosts:    
 		postString = ''       # Create a string to write to a text file
 		postString += redditPosts.id + ','   # Add the reddit id tag
 		postString += '\'' + redditPosts.title + '\'' + ','    # Add the comment title to the final string
@@ -75,32 +77,30 @@ for date in range(START_DATE, END_DATE):
 			print("ERROR: Attempt came while trying to process a comment.")
 			print("The amount of comments skipped: ", commentsPassed)
 			
-			# Delay if the program if the limits are about to be reached
-			if reddit.auth.limits['remaining'] <= 5:
-				print("CAUTION! Reddit limit is below 100 at: ", reddit.auth.limits['remaining'])
-				print("The Reddit time stamp is at: ", reddit.auth.limits['reset_timestamp'])
-				print("The number of requests used: ", reddit.auth.limits['used'])	
-				waitTime = delayCall(reddit.auth.limits['reset_timestamp'])
-				print("Your program will be delayed by: ", waitTime, " seconds.")
 			
 		# Indicate the exit of the comment tree
 		with open('C:\\Users\\micha\\Desktop\\NeoRedditContent.txt', "a", encoding='utf8') as outfile:
 			outfile.write("-----Exiting the comment tree.-----\n")
 			outfile.close()
 		
-		print("We have finished processing date: ", time.('%Y-%m-%d %H:%M:%S', time.localtime(date)))
-		print("The current limit is: ", reddit.auth.limits)
-		print("-----Undergoing Delay-----")
-		date += INTERVAL_TIME     # Shift the counter forward
-		time.sleep(DELAY_TIME)    # Delay the program to prevent limit excess
-		print("Now Processing date: ", time.strftime('%Y-%m-%d %H:%M:%S', time.localtime((date + INTERVAL_TIME))))
-		
-		# Delay if the program if the limits are about to be reached
-		if reddit.auth.limits['remaining'] <= 25:
+		if reddit.auth.limits['remaining'] <= 50:
 			print("CAUTION! Reddit limit is below 100 at: ", reddit.auth.limits['remaining'])
 			print("The Reddit time stamp is at: ", reddit.auth.limits['reset_timestamp'])
 			print("The number of requests used: ", reddit.auth.limits['used'])
 			waitTime = delayCall(reddit.auth.limits['reset_timestamp'])		
 			print("Your program will be delayed by: ", waitTime, " seconds.")
+		
+	print("We have finished processing date: ", time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(date)))
+	print("The current limit is: ", reddit.auth.limits)
+	print("-----Undergoing Delay-----")
+	time.sleep(DELAY_TIME)    # Delay the program to prevent limit excess
+		
+	# Delay if the program if the limits are about to be reached
+	if reddit.auth.limits['remaining'] <= 50:
+		print("CAUTION! Reddit limit is below 100 at: ", reddit.auth.limits['remaining'])
+		print("The Reddit time stamp is at: ", reddit.auth.limits['reset_timestamp'])
+		print("The number of requests used: ", reddit.auth.limits['used'])
+		waitTime = delayCall(reddit.auth.limits['reset_timestamp'])		
+		print("Your program will be delayed by: ", waitTime, " seconds.")
 		
 
